@@ -1,0 +1,61 @@
+version: "3.9"
+x-environment:
+  &default-environment
+  DATABASE_URL: postgres://glitchtip:password@postgres:5432/glitchtip
+  SECRET_KEY: eoHL6xnJ5ibpfDC25BScLZ3TH6KBqG5TRHjkWQ2UxuWyak5dcjbwAHQGcqV26pYt # best to run openssl rand -hex 32
+  PORT: 8000
+  EMAIL_URL: smtp://user@mailcatcher:1025 # https://glitchtip.com/documentation/install#configuration
+  GLITCHTIP_DOMAIN: http://localhost:8000 # Change this to your domain
+  DEFAULT_FROM_EMAIL: user@example.com # Change this to your email
+  CELERY_WORKER_CONCURRENCY: 2 # Set to 2 to prevent excessive memory usage. Change it or remove to set it to the number of cpu cores.
+x-depends_on:
+  &default-depends_on
+  - postgres
+  - redis
+  - mailcatcher
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: glitchtip
+      POSTGRES_DB: glitchtip
+      POSTGRES_PASSWORD: password
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./volumes/postgres/data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+  mailcatcher:
+    image: sj26/mailcatcher:v0.8.2
+    restart: unless-stopped
+    ports:
+      - "1080:1080"
+  web:
+    image: glitchtip/glitchtip:v3.2.0
+    depends_on: *default-depends_on
+    ports:
+      - "8000:8000"
+    environment: *default-environment
+    restart: unless-stopped
+    volumes: 
+      - ./volumes/glitchtip/uploads:/code/uploads
+  worker:
+    image: glitchtip/glitchtip:v3.2.0
+    command: ./bin/run-celery-with-beat.sh
+    depends_on: *default-depends_on
+    environment: *default-environment
+    restart: unless-stopped
+    volumes: 
+      - ./volumes/glitchtip/uploads:/code/uploads
+  migrate:
+    image: glitchtip/glitchtip:v3.2.0
+    depends_on: *default-depends_on
+    command: "./manage.py migrate"
+    environment: *default-environment
