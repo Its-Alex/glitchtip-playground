@@ -64,17 +64,22 @@ $ ./scripts/up.sh
 Then setup GlitchTip:
 
 ```sh
-$ ./scripts/setup-glitchtip.sh
+$ source ./scripts/setup-glitchtip.sh
 GlitchTip configured, you can now use DSN: "http://fcc3a189d6d94c30bbd33e91c1289cfa@localhost:8000/1"
 ```
 
-The following script will create a first project:
+The following script will create an account:
 
 - Email: `user@example.com`
 - Password: `fakepassword`
 
-And give you the DSN of a python project, set it in your environment:
+With a python project and give you the DSN of the project, it will be automatically added to your environment.
+
+You can now try to send error with python project:
 
 ```sh
-$ export GLITCHTIP_PTYHON_DSN="http://fcc3a189d6d94c30bbd33e91c1289cfa@localhost:8000/1"
+$ python main.py
 ```
+
+Finally login to `http://localhost:8000` to see issue.
+
