@@ -1,6 +1,8 @@
 # Project
 
 **/volumes
+**/.direnv
+cookies.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
